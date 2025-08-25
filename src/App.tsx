@@ -1,7 +1,11 @@
 import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from '@pages/LoginPage';
-import { HomePage } from '@pages/HomePage';
+import { StayPayHomePage } from '@pages/StayPayHomePage';
+import { PrepaymentFlow } from '@pages/prepay/PrepaymentFlow';
+import { HistoryPage } from '@pages/HistoryPage';
+import { ProfilePage } from '@pages/ProfilePage';
+import { TransactionDetailPage } from '@pages/TransactionDetailPage';
 import { AuthCallback } from '@components/auth/AuthCallback';
 import { configureAuth, KAKAO_SCOPES, GOOGLE_SCOPES, SCOPE_PRESETS } from '@config/auth.config';
 import { useAuthStore } from '@store/authStore';
@@ -58,7 +62,11 @@ function App() {
     <Router>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<StayPayHomePage />} />
+        <Route path="/prepay" element={<PrepaymentFlow />} />
+        <Route path="/history" element={<HistoryPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/transaction/:id" element={<TransactionDetailPage />} />
         <Route 
           path="/auth/google/callback" 
           element={<AuthCallback provider="google" redirectTo="/" />} 

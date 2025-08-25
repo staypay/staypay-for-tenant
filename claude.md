@@ -4,16 +4,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a React TypeScript project built with Vite for the "kaia-hackaton" (hackathon). The project uses modern web development tools and follows established best practices.
+OAuth authentication module built for a Kaia blockchain hackathon. Provides a modular, reusable authentication system with Google and Kakao login support, built with React, TypeScript, and Tailwind CSS.
 
 ## Technology Stack
 
 - **React 18** - UI library
-- **TypeScript** - Type-safe JavaScript
+- **TypeScript** - Type-safe JavaScript with strict mode enabled
 - **Vite** - Build tool and development server
 - **Tailwind CSS v3** - Utility-first CSS framework
 - **Zustand** - State management solution
 - **Framer Motion** - Animation library
+- **React Router v7** - Client-side routing
 
 ## Development Commands
 
@@ -21,7 +22,7 @@ This is a React TypeScript project built with Vite for the "kaia-hackaton" (hack
 # Install dependencies
 npm install
 
-# Start development server
+# Start development server (runs on http://localhost:5173)
 npm run dev
 
 # Build for production
@@ -37,23 +38,38 @@ npm run lint
 tsc -b
 ```
 
-## Project Structure
+## Architecture Overview
 
-```
-/src
-  /components     # Reusable React components
-  /hooks         # Custom React hooks
-  /store         # Zustand store definitions
-  /types         # TypeScript type definitions
-  /utils         # Utility functions
-  App.tsx        # Main application component
-  main.tsx       # Application entry point
-  index.css      # Global styles with Tailwind directives
-```
+### Authentication System
+The auth system follows an abstract provider pattern allowing easy extension:
+
+1. **AuthManager** (`src/lib/auth/AuthManager.ts`) - Central orchestrator that manages all OAuth providers
+2. **OAuthProvider** (`src/lib/auth/OAuthProvider.ts`) - Abstract base class defining the provider interface
+3. **Provider Implementations** - Google and Kakao providers extend the base class
+4. **Auth Store** (`src/store/authStore.ts`) - Zustand store managing authentication state
+5. **Auth Hooks** (`src/hooks/useAuth.ts`) - React hooks for consuming auth state
+
+### Key Authentication Flow
+1. User clicks login button → `AuthManager.login(provider)`
+2. Redirects to OAuth provider's authorization page
+3. Provider redirects back to `/auth/{provider}/callback`
+4. `AuthCallback` component handles the code exchange
+5. User profile is fetched and stored in Zustand store
+6. User is redirected to protected route
+
+### Path Aliases
+The project uses TypeScript path aliases configured in both `tsconfig.app.json` and `vite.config.ts`:
+- `@/*` → `src/*`
+- `@components/*` → `src/components/*`
+- `@hooks/*` → `src/hooks/*`
+- `@store/*` → `src/store/*`
+- `@lib/*` → `src/lib/*`
+- `@config/*` → `src/config/*`
+- `@pages/*` → `src/pages/*`
 
 ## Code Guidelines
 
-### From .cursor/rules:
+### From .cursor/rules
 
 **Clean Code Principles:**
 - Use constants over magic numbers
@@ -74,12 +90,12 @@ tsc -b
 - Use PascalCase for types/interfaces
 - Use camelCase for variables/functions
 - Avoid `any`, use `unknown` for unknown types
-- Enable strict mode in tsconfig
+- Strict mode is enabled in tsconfig
 
 **Tailwind CSS:**
 - Use utility classes over custom CSS
 - Mobile-first responsive design
-- Semantic color naming in config
+- Custom theme with semantic color naming (primary, gray scales)
 - Group utilities with @apply sparingly
 
 **State Management (Zustand):**
@@ -88,12 +104,31 @@ tsc -b
 - Keep stores focused and small
 - Implement proper TypeScript types
 
+## Adding New OAuth Providers
+
+To add a new OAuth provider (e.g., GitHub):
+
+1. Create provider class in `src/lib/auth/providers/`:
+```typescript
+export class GitHubOAuthProvider extends OAuthProvider {
+  name = 'github' as const;
+  
+  getAuthUrl(): string { /* implementation */ }
+  async exchangeCodeForToken(code: string): Promise<TokenResponse> { /* implementation */ }
+  async getUserProfile(accessToken: string): Promise<ProfileResponse> { /* implementation */ }
+}
+```
+
+2. Register in `AuthManager.ts` initialization
+3. Add type to `AuthProvider` in `src/types/auth.types.ts`
+4. Configure in `src/config/auth.config.ts`
+
 ## Configuration Files
 
-- `tailwind.config.js` - Tailwind CSS configuration with custom theme
+- `tailwind.config.cjs` - Tailwind CSS configuration with custom theme colors and animations
 - `postcss.config.js` - PostCSS configuration for Tailwind
-- `tsconfig.json` - TypeScript configuration
-- `vite.config.ts` - Vite build configuration
+- `tsconfig.app.json` - Main TypeScript configuration with path aliases
+- `vite.config.ts` - Vite build configuration with path alias resolution
 - `eslint.config.js` - ESLint configuration
 
 ## Library Links
@@ -101,11 +136,3 @@ tsc -b
 - [Framer Motion React Documentation](https://motion.dev/docs/react)
 - [Zustand Documentation](https://github.com/pmndrs/zustand)
 - [Vite Documentation](https://vitejs.dev/)
-
-## Notes
-
-- The project follows strict TypeScript configuration
-- CSS uses Tailwind utility classes with custom theme colors
-- State management uses Zustand for simplicity and performance
-- Animations handled through Framer Motion
-- Development server runs on http://localhost:5173 by default
