@@ -40,7 +40,7 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
   return (
     <nav
       className={`
-      fixed w-full max-w-screen-mobile mx-auto bottom-0 left-0 right-0 bg-white border-t border-background-border
+      fixed w-full max-w-screen-mobile mx-auto bottom-0 left-0 right-0 bg-white border-t border-l border-r border-background-border
       ${className}
     `}
     >
@@ -100,7 +100,7 @@ export const TabBarItem: React.FC<TabBarItemProps> = ({
   return (
     <button
       onClick={onClick}
-      className="relative flex-1 flex flex-col items-center justify-center py-2"
+      className="relative flex-1 flex flex-col items-center justify-center py-2 border-l border-r border-background-border"
     >
       {showIndicator && isActive && (
         <div className="absolute top-0 left-0 right-0 h-0.5 bg-primary" />

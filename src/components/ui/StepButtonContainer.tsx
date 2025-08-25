@@ -16,12 +16,9 @@ export const StepButtonContainer: React.FC<StepButtonContainerProps> = ({
   children,
   className = "",
 }) => {
-  const baseClasses =
-    "fixed bottom-0 left-0 right-0 max-w-mobile mx-auto p-4 bg-white border-t border-background-border";
-
   return (
     <div
-      className={`fixed bottom-0 left-0 right-0 max-w-mobile mx-auto p-4 bg-white border-t border-background-border ${className}`}
+      className={`fixed bottom-0 left-0 right-0 max-w-mobile mx-auto p-4 bg-white border-t border-l border-r border-background-border ${className}`}
     >
       {children}
     </div>
