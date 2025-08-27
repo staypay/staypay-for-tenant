@@ -1,212 +1,123 @@
-# Kaia Hackathon - OAuth Authentication Module
+# StayPay - 월세 대출 플랫폼 Demo
 
-A modular, reusable OAuth authentication system built with React, TypeScript, and Tailwind CSS. Supports Google and Kakao login with minimal dependencies and maximum flexibility.
+[Korea Stablecoin Hackathon](https://dorahacks.io/hackathon/korea-stablecoin-hackathon/detail) 제출작
 
-## Features
+월세 대출 신청 및 관리를 위한 웹 애플리케이션 프로토타입입니다.
 
-- 🔐 **OAuth 2.0 Authentication** - Google and Kakao login support
-- 🎨 **Modern UI** - Built with Tailwind CSS v3 and Framer Motion
-- 📦 **Minimal Dependencies** - Uses only essential packages
-- 🔧 **Highly Configurable** - Easy to configure via environment variables
-- 🎯 **TypeScript** - Full type safety
-- 🚀 **Fast Development** - Powered by Vite
-- 🗂️ **State Management** - Zustand for simple and efficient state management
-- 🎭 **Abstract Design** - Easy to extend with new OAuth providers
+## 주요 기능 (Demo)
 
-## Quick Start
+- 💰 **월세 대출 신청** - 단계별 대출 신청 프로세스
+- 📄 **계약서 업로드** - 임대차 계약서 파일 업로드 (Demo)
+- 📊 **거래 내역 조회** - 대출 신청 현황 및 거래 내역
+- 🔐 **OAuth 로그인** - Google/Kakao 소셜 로그인
+- 👤 **프로필 관리** - 사용자 정보 조회
 
-### 1. Install Dependencies
+## 빠른 시작
+
+### 1. 의존성 설치
 
 ```bash
-npm install
+pnpm install
 ```
 
-### 2. Configure OAuth Providers
+### 2. 환경 변수 설정 (선택사항)
 
-Copy `.env.example` to `.env` and add your OAuth credentials:
+`.env.example`을 `.env`로 복사 후 OAuth 설정:
 
 ```env
 # Google OAuth
 VITE_GOOGLE_CLIENT_ID=your_google_client_id
-VITE_GOOGLE_CLIENT_SECRET=your_google_client_secret
 VITE_GOOGLE_REDIRECT_URI=http://localhost:5173/auth/google/callback
 
-# Kakao OAuth
+# Kakao OAuth  
 VITE_KAKAO_CLIENT_ID=your_kakao_app_key
-VITE_KAKAO_CLIENT_SECRET=your_kakao_client_secret
 VITE_KAKAO_REDIRECT_URI=http://localhost:5173/auth/kakao/callback
 ```
 
-### 3. Run Development Server
+> 참고: OAuth 설정 없이도 Demo 실행 가능
+
+### 3. 개발 서버 실행
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
-## Usage
+브라우저에서 http://localhost:5173 접속
 
-### Basic Login Button
+## 주요 화면
 
-```tsx
-import { LoginButton } from '@/components/auth/LoginButton';
+### 1. 홈 화면 (`/`)
+- 월세 대출 신청 시작
+- 빠른 액션 메뉴
+- 최근 거래 내역
 
-function MyComponent() {
-  return (
-    <div>
-      <LoginButton provider="google" />
-      <LoginButton provider="kakao" />
-    </div>
-  );
-}
-```
+### 2. 대출 신청 (`/prepay`)
+- 계약서 업로드
+- 임차인 정보 입력  
+- 임대인 정보 입력
+- 계약 정보 확인
+- 신청 완료
 
-### Using Auth Hook
+### 3. 거래 내역 (`/history`)
+- 대출 신청 목록
+- 상태별 필터링 (대기중/진행중/완료)
+- 거래 상세 정보 조회
 
-```tsx
-import { useAuth } from '@/hooks/useAuth';
+### 4. 프로필 (`/profile`)
+- 사용자 정보 표시
+- 로그아웃
 
-function Profile() {
-  const { user, isAuthenticated, logout } = useAuth();
-
-  if (!isAuthenticated) {
-    return <div>Please login</div>;
-  }
-
-  return (
-    <div>
-      <h1>Welcome {user.name}</h1>
-      <button onClick={logout}>Logout</button>
-    </div>
-  );
-}
-```
-
-### Protected Routes
-
-```tsx
-import { useRequireAuth } from '@/hooks/useRequireAuth';
-
-function ProtectedPage() {
-  // Automatically redirects to login if not authenticated
-  useRequireAuth();
-
-  return <div>Protected content</div>;
-}
-```
-
-### Custom Configuration
-
-```tsx
-import { configureAuth } from '@/config/auth.config';
-
-// Configure in your main.tsx or App.tsx
-configureAuth({
-  providers: {
-    google: {
-      clientId: 'custom-client-id',
-      scope: 'custom scopes',
-    },
-  },
-  callbacks: {
-    onLoginSuccess: (user) => {
-      console.log('User logged in:', user);
-    },
-    onLoginError: (error) => {
-      console.error('Login failed:', error);
-    },
-  },
-});
-```
-
-## Project Structure
+## 프로젝트 구조
 
 ```
 src/
-├── components/
-│   └── auth/
-│       ├── LoginButton.tsx      # Reusable login button
-│       └── AuthCallback.tsx     # OAuth callback handler
-├── config/
-│   └── auth.config.ts          # Auth configuration
-├── hooks/
-│   ├── useAuth.ts             # Main auth hook
-│   └── useRequireAuth.ts      # Protected route hook
-├── lib/
-│   └── auth/
-│       ├── AuthManager.ts     # Auth orchestrator
-│       ├── OAuthProvider.ts   # Abstract OAuth provider
-│       └── providers/
-│           ├── GoogleOAuthProvider.ts
-│           └── KakaoOAuthProvider.ts
-├── store/
-│   └── authStore.ts           # Zustand auth store
-├── types/
-│   └── auth.types.ts          # TypeScript types
-└── pages/
-    ├── LoginPage.tsx          # Login page example
-    └── HomePage.tsx           # Protected page example
+├── assets/              # 정적 파일
+│   └── fonts/          # Pretendard 폰트
+├── components/         # UI 컴포넌트
+│   ├── auth/          # 인증 관련
+│   ├── core/          # 헤더, 네비게이션
+│   ├── forms/         # 폼 컴포넌트
+│   ├── layout/        # 레이아웃
+│   ├── transactions/  # 거래 관련
+│   └── ui/            # 기본 UI 요소
+├── config/            # 설정 파일
+├── hooks/             # React 훅
+├── lib/               # 라이브러리
+│   └── auth/         # OAuth 인증 시스템
+├── pages/             # 페이지 컴포넌트
+│   ├── prepay/       # 대출 신청 플로우
+│   └── ...           # 기타 페이지
+├── store/             # 상태 관리
+└── types/             # TypeScript 타입
 ```
 
-## Adding New OAuth Providers
 
-1. Create a new provider class extending `OAuthProvider`:
-
-```tsx
-import { OAuthProvider } from '../OAuthProvider';
-
-export class GitHubOAuthProvider extends OAuthProvider {
-  name = 'github' as const;
-  
-  getAuthUrl(): string {
-    // Implementation
-  }
-  
-  async exchangeCodeForToken(code: string): Promise<TokenResponse> {
-    // Implementation
-  }
-  
-  async getUserProfile(accessToken: string): Promise<ProfileResponse> {
-    // Implementation
-  }
-}
-```
-
-2. Register the provider in `AuthManager.ts`
-3. Add configuration to `auth.config.ts`
-4. Update types in `auth.types.ts`
-
-## Development
+## 개발 명령어
 
 ```bash
-# Install dependencies
+# 의존성 설치
 npm install
 
-# Start dev server
+# 개발 서버 실행
 npm run dev
 
-# Build for production
+# 프로덕션 빌드
 npm run build
 
-# Preview production build
+# 빌드 미리보기
 npm run preview
 
-# Run linter
+# 린터 실행
 npm run lint
-
-# Type checking
-tsc -b
 ```
 
-## Tech Stack
+## 기술 스택
 
-- **React 18** - UI library
-- **TypeScript** - Type safety
-- **Vite** - Build tool
-- **Tailwind CSS v3** - Styling
-- **Zustand** - State management
-- **Framer Motion** - Animations
-- **React Router** - Routing
-
-## License
-
-MIT
+- **React 18** - UI 라이브러리
+- **TypeScript** - 타입 안정성
+- **Vite** - 빌드 도구
+- **Tailwind CSS v3** - 스타일링
+- **Zustand** - 상태 관리
+- **Framer Motion** - 애니메이션
+- **React Router v7** - 라우팅
+- **lucide-react** - 아이콘
