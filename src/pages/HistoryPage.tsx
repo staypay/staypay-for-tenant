@@ -8,6 +8,7 @@ import {
   STORAGE_KEYS,
   localStorageHelper,
 } from "@/lib/dummyData";
+import { contractStorage } from "@/lib/contractStorage";
 import { Filter, RefreshCw } from "lucide-react";
 import { MobileContainer } from "@/components/layout/MobileContainer";
 
@@ -38,26 +39,45 @@ export const HistoryPage: React.FC = () => {
   const loadInitialTransactions = async () => {
     setIsLoading(true);
     try {
-      // Check localStorage first
+      // Generate dummy data first (always show)
+      const dummyTrans = generateTransactions(6);
+
+      // Load contracts from localStorage
+      const activeContracts = contractStorage.getActiveContracts();
+
+      // Load saved transactions from localStorage
       const savedTransactions = localStorageHelper.load<TransactionData[]>(
         STORAGE_KEYS.TRANSACTIONS,
         []
       );
 
+      // Combine dummy data with saved contract transactions
+      let allTransactions: TransactionData[] = [];
+
       if (savedTransactions.length > 0) {
-        setTransactions(savedTransactions);
+        // If we have saved transactions, combine with dummy data
+        const contractTransactions = savedTransactions.filter(t => t.id.startsWith('trans-'));
+        allTransactions = [...dummyTrans, ...contractTransactions];
       } else {
-        // Generate and save dummy data
-        const data = await apiSimulator.fetchTransactions(1, 20);
-        setTransactions(data);
-        localStorageHelper.save(STORAGE_KEYS.TRANSACTIONS, data);
+        // No saved transactions, just use dummy data
+        allTransactions = [...dummyTrans];
       }
+
+      // Sort by date (most recent first)
+      allTransactions.sort((a, b) => {
+        const dateA = new Date(a.date || "");
+        const dateB = new Date(b.date || "");
+        return dateB.getTime() - dateA.getTime();
+      });
+
+      // Limit to 6 most recent transactions
+      setTransactions(allTransactions.slice(0, 6));
+
       setPage(1);
-      setHasMore(true);
+      setHasMore(false);
     } catch (error) {
       console.error("Failed to load transactions:", error);
-      // Use fallback data
-      const fallbackData = generateTransactions(20);
+      const fallbackData = generateTransactions(3);
       setTransactions(fallbackData);
     } finally {
       setIsLoading(false);
@@ -68,11 +88,7 @@ export const HistoryPage: React.FC = () => {
     setIsRefreshing(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate refresh delay
-      const data = await apiSimulator.fetchTransactions(1, 20);
-      setTransactions(data);
-      localStorageHelper.save(STORAGE_KEYS.TRANSACTIONS, data);
-      setPage(1);
-      setHasMore(true);
+      await loadInitialTransactions(); // Reload everything including contract data
     } catch (error) {
       console.error("Failed to refresh:", error);
     } finally {
@@ -81,29 +97,8 @@ export const HistoryPage: React.FC = () => {
   };
 
   const loadMoreTransactions = async () => {
-    if (isLoadingMore || !hasMore) return;
-
-    setIsLoadingMore(true);
-    try {
-      const nextPage = page + 1;
-      const newTransactions = await apiSimulator.fetchTransactions(
-        nextPage,
-        10
-      );
-
-      if (newTransactions.length === 0) {
-        setHasMore(false);
-      } else {
-        const updatedTransactions = [...transactions, ...newTransactions];
-        setTransactions(updatedTransactions);
-        localStorageHelper.save(STORAGE_KEYS.TRANSACTIONS, updatedTransactions);
-        setPage(nextPage);
-      }
-    } catch (error) {
-      console.error("Failed to load more:", error);
-    } finally {
-      setIsLoadingMore(false);
-    }
+    // Disabled for now - we're showing limited transactions
+    return;
   };
 
   const applyFilter = () => {
@@ -124,7 +119,8 @@ export const HistoryPage: React.FC = () => {
   };
 
   const handleTransactionClick = (transaction: TransactionData) => {
-    navigate(`/transaction/${transaction.id}`);
+    // Disabled - no detail view needed
+    return;
   };
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
@@ -145,9 +141,9 @@ export const HistoryPage: React.FC = () => {
     color?: string;
   }> = [
     { value: "all", label: "전체" },
-    { value: "pending", label: "대기중", color: "text-warning" },
-    { value: "processing", label: "처리중", color: "text-primary" },
-    { value: "completed", label: "완료", color: "text-success" },
+    { value: "pending", label: "송금 준비 중", color: "text-gray-300" },
+    { value: "processing", label: "송금 완료", color: "text-primary" },
+    { value: "completed", label: "상환 완료", color: "text-success" },
     { value: "failed", label: "실패", color: "text-danger" },
   ];
 
@@ -250,13 +246,13 @@ export const HistoryPage: React.FC = () => {
         ) : (
           <div className="bg-white">
             {sortedMonths.map((monthKey) => (
-              <div key={monthKey} className="mb-2">
+              <div key={monthKey} className="mb-4">
                 <div className="px-6 py-3 bg-background-secondary">
                   <h3 className="text-sm font-bold text-text-secondary">
                     {formatMonthHeader(monthKey)}
                   </h3>
                 </div>
-                <div className="px-6">
+                <div className="px-6 pt-4">
                   <TransactionList
                     transactions={groupedTransactions[monthKey]}
                     onTransactionClick={handleTransactionClick}
@@ -267,15 +263,9 @@ export const HistoryPage: React.FC = () => {
           </div>
         )}
 
-        {isLoadingMore && (
-          <div className="flex justify-center py-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-3 border-primary border-t-transparent" />
-          </div>
-        )}
-
-        {!hasMore && filteredTransactions.length > 0 && (
+        {filteredTransactions.length > 0 && (
           <div className="text-center py-4 text-sm text-text-muted">
-            모든 거래 내역을 불러왔습니다
+            최근 거래 내역입니다
           </div>
         )}
       </div>

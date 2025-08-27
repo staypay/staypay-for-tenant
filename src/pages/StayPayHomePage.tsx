@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Header,
@@ -6,12 +6,14 @@ import {
   ToggleButtonGroup,
   LoanSummary,
   QuickActionCard,
-  TransactionList,
   LinkButton,
   SectionTitle,
 } from "../components";
 import { TransactionData } from "@/components/transactions/TransactionCard";
+import { SimpleTransactionList } from "@/components/transactions/SimpleTransactionCard";
 import { MobileContainer } from "@/components/layout/MobileContainer";
+import { contractStorage } from "@/lib/contractStorage";
+import { localStorageHelper, STORAGE_KEYS, generateTransactions } from "@/lib/dummyData";
 
 interface StayPayHomePageProps {
   onNavigate?: (page: string) => void;
@@ -23,34 +25,65 @@ export const StayPayHomePage: React.FC<StayPayHomePageProps> = ({
   const navigate = useNavigate();
   const [userMode, setUserMode] = useState<"borrower" | "lender">("borrower");
   const [activeTab, setActiveTab] = useState("home");
+  const [transactions, setTransactions] = useState<TransactionData[]>([]);
+  const [loanAmount, setLoanAmount] = useState(0);
+  const [hasActiveContracts, setHasActiveContracts] = useState(false);
 
-  // 더미 데이터
-  const dummyTransactions = [
-    {
-      id: "1",
-      title: "A빌라 월세보증금",
-      subtitle: "25/09/01",
-      amount: 510000,
-      currency: "KRWS" as const,
-      status: "pending" as const, // 송금 준비중
-    },
-    {
-      id: "2",
-      title: "월세,관리비",
-      subtitle: "25/08/01",
-      amount: 510000,
-      currency: "KRWS" as const,
-      status: "completed" as const, // 송금 완료
-    },
-    {
-      id: "3",
-      title: "월세,관리비",
-      subtitle: "25/08/01",
-      amount: 510000,
-      currency: "KRWS" as const,
-      status: "completed" as const, // 상환완료
-    },
-  ] as TransactionData[];
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = () => {
+    // Load contracts from LocalStorage
+    const activeContracts = contractStorage.getActiveContracts();
+    setHasActiveContracts(activeContracts.length > 0);
+    
+    // Generate dummy data first
+    const dummyTrans = generateTransactions(3);
+    
+    // Load transactions from localStorage
+    const savedTransactions = localStorageHelper.load<TransactionData[]>(
+      STORAGE_KEYS.TRANSACTIONS,
+      []
+    );
+    
+    // If we have saved transactions, use them combined with dummy data
+    if (savedTransactions.length > 0) {
+      // Filter out duplicate dummy transactions and combine
+      const contractTransactions = savedTransactions.filter(t => t.id.startsWith('trans-'));
+      const allTransactions = [...dummyTrans, ...contractTransactions];
+      
+      // Sort by date (most recent first)
+      allTransactions.sort((a, b) => {
+        const dateA = new Date(a.date || '');
+        const dateB = new Date(b.date || '');
+        return dateB.getTime() - dateA.getTime();
+      });
+      
+      // Calculate loan amount
+      let totalLoan = 0;
+      allTransactions.forEach(transaction => {
+        if (transaction.status === 'pending' || transaction.status === 'processing') {
+          totalLoan += transaction.amount;
+        }
+      });
+      setLoanAmount(Math.min(totalLoan, 2000000));
+      
+      setTransactions(allTransactions.slice(0, 3));
+    } else {
+      // No saved transactions, just use dummy data
+      setTransactions(dummyTrans.slice(0, 3));
+      
+      // Calculate loan from dummy data
+      let totalLoan = 0;
+      dummyTrans.forEach(transaction => {
+        if (transaction.status === 'pending' || transaction.status === 'processing') {
+          totalLoan += transaction.amount;
+        }
+      });
+      setLoanAmount(Math.min(totalLoan, 2000000));
+    }
+  };
 
   const handleTabClick = (tabId: string) => {
     setActiveTab(tabId);
@@ -104,7 +137,7 @@ export const StayPayHomePage: React.FC<StayPayHomePageProps> = ({
         <div className="mb-8">
           <LoanSummary
             loanLimit={2000000}
-            currentLoan={1040000}
+            currentLoan={Math.min(loanAmount, 2000000)}
             dueDate="2025-09-01"
           />
         </div>
@@ -123,18 +156,28 @@ export const StayPayHomePage: React.FC<StayPayHomePageProps> = ({
             <h2 className="text-xl font-bold text-text-primary">
               계약 히스토리
             </h2>
-            <LinkButton
-              label="See all"
-              onClick={handleSeeAllClick}
-              showIcon={true}
-            />
+            {transactions.length > 0 && (
+              <LinkButton
+                label="See all"
+                onClick={handleSeeAllClick}
+                showIcon={true}
+              />
+            )}
           </div>
 
-          {/* 거래 내역 리스트 */}
-          <TransactionList
-            transactions={dummyTransactions}
-            onTransactionClick={handleTransactionClick}
-          />
+          {/* 거래 내역 리스트 - 간단한 버전 */}
+          {transactions.length > 0 ? (
+            <SimpleTransactionList
+              transactions={transactions}
+              onTransactionClick={undefined} // Remove click handler
+            />
+          ) : (
+            <div className="text-center py-8 text-text-muted">
+              {hasActiveContracts 
+                ? "아직 거래 내역이 없습니다." 
+                : "계약을 등록하고 월세를 선납해보세요!"}
+            </div>
+          )}
         </div>
       </div>
 

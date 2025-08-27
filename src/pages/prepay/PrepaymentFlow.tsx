@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { ContractNameStep } from "./steps/ContractNameStep";
 import { TenantInfoStep } from "./steps/TenantInfoStep";
@@ -7,6 +7,7 @@ import { ContractUploadStep } from "./steps/ContractUploadStep";
 import { LoadingStep } from "./steps/LoadingStep";
 import { CompletionStep } from "./steps/CompletionStep";
 import { MobileContainer } from "@/components/layout/MobileContainer";
+import { contractStorage, StoredContract } from "@/lib/contractStorage";
 
 export type PrepaymentStep =
   | "contract-name"
@@ -45,6 +46,7 @@ export const PrepaymentFlow: React.FC = () => {
   const [currentStep, setCurrentStep] =
     useState<PrepaymentStep>("contract-name");
   const [formData, setFormData] = useState<ContractFormData>({});
+  const savedContractRef = useRef<StoredContract | null>(null);
 
   const handleBack = () => {
     const stepOrder: PrepaymentStep[] = [
@@ -79,8 +81,10 @@ export const PrepaymentFlow: React.FC = () => {
       case "contract-upload":
         // Start loading animation
         setCurrentStep("loading");
-        // Simulate API call
+        // Save contract to LocalStorage
         setTimeout(() => {
+          const savedContract = contractStorage.saveContract(updatedData);
+          savedContractRef.current = savedContract;
           setCurrentStep("completion");
         }, 3000);
         break;
@@ -166,7 +170,10 @@ export const PrepaymentFlow: React.FC = () => {
       case "loading":
         return <LoadingStep />;
       case "completion":
-        return <CompletionStep onComplete={handleComplete} />;
+        return <CompletionStep 
+          onComplete={handleComplete} 
+          contractData={savedContractRef.current} 
+        />;
       default:
         return null;
     }
