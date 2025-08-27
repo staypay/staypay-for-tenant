@@ -56,7 +56,9 @@ export const HistoryPage: React.FC = () => {
 
       if (savedTransactions.length > 0) {
         // If we have saved transactions, combine with dummy data
-        const contractTransactions = savedTransactions.filter(t => t.id.startsWith('trans-'));
+        const contractTransactions = savedTransactions.filter((t) =>
+          t.id.startsWith("trans-")
+        );
         allTransactions = [...dummyTrans, ...contractTransactions];
       } else {
         // No saved transactions, just use dummy data
@@ -141,7 +143,7 @@ export const HistoryPage: React.FC = () => {
     color?: string;
   }> = [
     { value: "all", label: "전체" },
-    { value: "pending", label: "송금 준비 중", color: "text-gray-300" },
+    { value: "pending", label: "송금 확인 중", color: "text-gray-300" },
     { value: "processing", label: "송금 완료", color: "text-primary" },
     { value: "completed", label: "상환 완료", color: "text-success" },
     { value: "failed", label: "실패", color: "text-danger" },

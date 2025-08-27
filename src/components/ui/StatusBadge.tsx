@@ -25,7 +25,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
     switch (status) {
       case "pending":
         return {
-          text: text || "송금 준비중",
+          text: text || "송금 확인 중",
           bg: "bg-status-pending",
           textColor: "text-white",
         };

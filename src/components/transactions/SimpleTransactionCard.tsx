@@ -21,7 +21,7 @@ export const SimpleTransactionCard: React.FC<SimpleTransactionCardProps> = ({
   const getStatusBadge = () => {
     const statusConfig = {
       pending: {
-        text: "송금 준비중",
+        text: "송금 확인 중",
         bg: "bg-text-secondary",
         textColor: "text-white",
       },

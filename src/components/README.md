@@ -92,7 +92,7 @@ The main home page (`/src/pages/StayPayHomePage.tsx`) implements the Figma desig
 - `LoanSummary` - 대출 정보 표시 (한도, 현재 대출액, 상환일)
 - `QuickActionCard` - "월세 선납하기" 빠른 실행 버튼
 - `TransactionList` - 거래 내역 리스트
-- `StatusBadge` - 거래 상태 표시 (송금 준비중, 송금 완료, 상환완료)
+- `StatusBadge` - 거래 상태 표시 (송금 확인 중, 송금 완료, 상환완료)
 - `BottomTabBar` - 하단 네비게이션
 
 ### Dummy Data Structure

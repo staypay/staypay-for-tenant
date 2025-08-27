@@ -211,7 +211,7 @@ class ContractStorageService {
     // Calculate from transactions (to avoid duplication)
     transactions.forEach((transaction) => {
       // Count transactions that represent active loans
-      // pending (송금 준비 중) and processing (송금 완료) are active loans
+      // pending (송금 확인 중) and processing (송금 완료) are active loans
       // completed (상환 완료) transactions are not counted
       if (
         transaction.status === "pending" ||
